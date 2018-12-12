@@ -1,55 +1,76 @@
 //@author CImg team, version 2.4.1
 #include "CImg-2.4.1\CImg.h"
 #include <iostream>
+#include <fstream>
 
+//@author Гудилин Андрей, гр.621702
 #define COLOR_CONST 3
-#define STEP_INIT_CONST 100
+#define STEP_INIT_CONST 500
+#define INPUT_FILE_NAME "input.bmp"
 
-cimg_library::CImg<unsigned char> image("input.bmp");
-int width = image.width();
-int height = image.height();
 int n = 8;
 int m = 8;
+int p = 30;
+double e = 620;
+
+cimg_library::CImg<unsigned char> image(INPUT_FILE_NAME);
+int width = image.width();
+int height = image.height();
 int w = width / m;
 int h = height / n;
 int N = n * m * COLOR_CONST;
-int p = N * 3 / 4;
 int L = h * w;
 double E = 0;
 double Eq = 0;
-double e = 20;
 double* a1 = 0;
 double a2 = 0;
-double** X;
-double* Y;
-double** W[2];
-double* Xresult;
+float** X;
+float* Y;
+float** W[2];
+float* Xresult;
 
 void saveImage();
 
+//@author Гудилин Андрей, гр.621702
 int main()
-{
-	W[0] = new double*[N];
-	W[1] = new double*[p];
+{	
+	char* str = new char[(N + L)* p * sizeof(float) + 3];
+	std::ofstream file("commpressed", std::ios_base::binary | std::ios_base::trunc);
+	file.write(str, (N + L) * p * sizeof(float) + 3);
+	file.close();
+	delete[]str;
+	
+	std::ifstream in(INPUT_FILE_NAME, std::ifstream::ate | std::ifstream::binary);
+	double inSize = in.tellg();
+	in.close();
+
+	std::ifstream out("commpressed", std::ifstream::ate | std::ifstream::binary);
+	double outSize = out.tellg();
+	in.close();
+
+	std::cout << "Z: " << inSize / outSize << std::endl;
+
+	W[0] = new float*[N];
+	W[1] = new float*[p];
 	for (int i = 0; i < N; i++) {
-		W[0][i] = new double[p];
+		W[0][i] = new float[p];
 		for (int j = 0; j < p; j++) {
-			W[0][i][j] = (((double)(rand()) / RAND_MAX * 2) - 1) * 0.1;
+			W[0][i][j] = (((float)(rand()) / RAND_MAX * 2) - 1) * 0.1;
 		}
 	}
 	for (int i = 0; i < p; i++) {
-		W[1][i] = new double[N];
+		W[1][i] = new float[N];
 		for (int j = 0; j < N; j++) {
 			W[1][i][j] = W[0][j][i];
 		}
 	}
 
-	Xresult = new double[N];
-	Y = new double[p];
+	Xresult = new float[N];
+	Y = new float[p];
 
-	X = new double*[L];
+	X = new float*[L];
 	for (int i = 0; i < L; i++) {
-		X[i] = new double[N];
+		X[i] = new float[N];
 	}
 
 	int Li = -1;
@@ -67,7 +88,7 @@ int main()
 		}
 	}
 
-	double* ww = new double[p];
+	float* ww = new float[p];
 
 	a1 = new double[L];
 	for (int q = 0; q < L; q++) {
@@ -167,6 +188,7 @@ int main()
 	system("pause");
 }
 
+//@author Гудилин Андрей, гр.621702
 void saveImage() {
 	cimg_library::CImg<unsigned char> img(width, height, 1, 3);
 	img.fill(0);
